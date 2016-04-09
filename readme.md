@@ -33,29 +33,31 @@ upgrader({
 and create a `releases.json` file next to `cli.js`, which looks like the following ([sample available here](sample/releases.json)):
 
 ```json
-[
-	{
-		"version": "0.14.0",
-		"transforms": [
-      "path/to/transorm/a.js",
-			"path/to/transorm/b.js"
-		]
-	},
-	{
-		"version": "0.15.0",
-		"transforms": [
-      "path/to/transorm/c.js",
-			"path/to/transorm/d.js"
-		]
-	},
-	{
-		"version": "1.0.0",
-		"transforms": [
-      "path/to/transorm/e.js",
-			"path/to/transorm/f.js"
-		]
-	}
-]
+[{
+	"version": "0.14.0",
+	"transforms": [
+		"path/to/transorm/a.js",
+		"path/to/transorm/b.js"
+	]
+}, {
+	"version": "0.15.0",
+	"transforms": [
+		"path/to/transorm/c.js",
+		"path/to/transorm/d.js"
+	]
+}, {
+	"version": "1.0.0",
+	"transforms": [
+		"path/to/transorm/e.js",
+		"path/to/transorm/f.js"
+	]
+}, {
+	"version": "2.0.0",
+	"transforms": [
+		"path/to/transorm/g.js",
+		"path/to/transorm/h.js"
+	]
+}]
 ```
 
 Give execution access to your script
@@ -67,11 +69,7 @@ and you should now be able to run the cli using
 ./cli.js
 ```
 
-Unless you committed your changes and your directory is clean, the program will probably exit and warn you about  
-
-Simply run `lib-upgrader` in your terminal and answer a few questions. You can pass a filename directly to the CLI. If you do not, you will be prompted for one.
-
-Ensure you have a backup of your tests or commit the latest changes before running this.
+Unless you committed your changes and your directory is clean, the program will exit and ask you to do that or stash your changes. You can force through it by adding `--force` to the command line.
 
 ## License
 
