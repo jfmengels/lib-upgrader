@@ -1,0 +1,57 @@
+{
+  "name": "lib-upgrader",
+  "version": "1.0.0",
+  "description": "CLI builder to help users upgrade library versions",
+  "license": "MIT",
+  "repository": "jfmengels/lib-upgrader",
+  "author": {
+    "name": "Jeroen Engels",
+    "email": "jfm.engels@gmail.com",
+    "url": "github.com/jfmengels"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "xo && ava"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "!*.test.js"
+  ],
+  "keywords": [
+    "codemod",
+    "update",
+    "upgrade",
+    "jscodeshift",
+    "transform",
+    "npm"
+  ],
+  "dependencies": {
+    "arrify": "^1.0.1",
+    "globby": "^4.0.0",
+    "inquirer": "^0.12.0",
+    "is-git-clean": "^1.0.0",
+    "jscodeshift": "^0.3.19",
+    "lodash.assign": "^4.0.7",
+    "lodash.findindex": "^4.3.0",
+    "lodash.flatten": "^4.1.1",
+    "lodash.uniq": "^4.2.1",
+    "meow": "^3.7.0",
+    "npm-run-path": "^1.0.0",
+    "pinkie-promise": "^2.0.0",
+    "pkg-conf": "^1.1.2",
+    "semver": "^5.1.0",
+    "update-notifier": "^0.6.3"
+  },
+  "devDependencies": {
+    "ava": "^0.14.0",
+    "xo": "^0.13.0"
+  },
+  "ava": {
+    "files": [
+      "**/*.test.js"
+    ]
+  }
+}
