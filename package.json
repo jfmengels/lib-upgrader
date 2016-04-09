@@ -1,6 +1,6 @@
 {
   "name": "lib-upgrader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI builder to help users upgrade library versions",
   "license": "MIT",
   "repository": "jfmengels/lib-upgrader",
