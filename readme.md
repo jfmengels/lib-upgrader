@@ -7,7 +7,7 @@ Codemods, or [`jscodeshift`](https://github.com/facebook/jscodeshift) transforms
 ## Install
 
 ```
-$ npm install --save lib-upgrader
+$ npm install --save lib-upgrader jscodeshift
 ```
 
 
