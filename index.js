@@ -5,7 +5,6 @@ var meow = require('meow');
 var globby = require('globby');
 var inquirer = require('inquirer');
 var assign = require('lodash.assign');
-var findIndex = require('lodash.findindex');
 var npmRunPath = require('npm-run-path');
 var isGitClean = require('is-git-clean');
 var pinkiePromise = require('pinkie-promise');
@@ -76,16 +75,20 @@ function exitIfGitIsDirty(cli) {
 	}
 }
 
+function versionsAfter(versions, versionIndex, answers) {
+	var version = answers.from;
+	if (versionIndex !== -1) {
+		version = versions[versionIndex].value;
+	}
+	return lib.takeVersionsAfter(versions, version);
+}
+
 function getQuestions(options, cli, versions) {
 	function truthy(v) {
 		return v;
 	}
-
 	var name = options.libraryName;
-
-	var from = findIndex(versions, function (version) {
-		return version === cli.flags.from || version.value === cli.flags.from;
-	});
+	var from = lib.indexOfVersion(versions, cli.flags.from);
 
 	return [{
 		type: 'list',
@@ -99,10 +102,10 @@ function getQuestions(options, cli, versions) {
 		name: 'to',
 		message: 'What version of ' + name + ' are you moving to?',
 		choices: function (answers) {
-			return lib.takeVersionsAfter(versions, answers.from);
+			return versionsAfter(versions, from, answers);
 		},
 		default: function (answers) {
-			return lib.takeVersionsAfter(versions, answers.from).length - 1;
+			return versionsAfter(versions, from, answers).length - 1;
 		}
 	}, {
 		type: 'input',
