@@ -35,8 +35,9 @@ function cliArgs(options, releases) {
 		'  $ ' + options.pkg.name + ' [<file|glob> ...]',
 		'',
 		'Options',
-		'  --from         Specify the version of ' + options.libraryName + ' currently used',
-		'  --force, -f    Bypass safety checks and forcibly run codemods',
+		'  --from <version> Specify the version of ' + options.libraryName + ' currently used',
+		'  --to <version>   Specify the version of ' + options.libraryName + ' to move to',
+		'  --force, -f      Bypass safety checks and forcibly run codemods',
 		'',
 		'Available upgrades'
 	].concat(upgrades);
@@ -89,6 +90,7 @@ function getQuestions(options, cli, versions) {
 	}
 	var name = options.libraryName;
 	var from = lib.indexOfVersion(versions, cli.flags.from);
+	var to = lib.indexOfVersion(versions, cli.flags.to);
 
 	return [{
 		type: 'list',
@@ -101,12 +103,13 @@ function getQuestions(options, cli, versions) {
 		type: 'list',
 		name: 'to',
 		message: 'What version of ' + name + ' are you moving to?',
-		choices: function (answers) {
+		choices: (to !== -1 && to) || function (answers) {
 			return versionsAfter(versions, from, answers);
 		},
 		default: function (answers) {
 			return versionsAfter(versions, from, answers).length - 1;
-		}
+		},
+		when: to === -1
 	}, {
 		type: 'input',
 		name: 'files',
