@@ -1,30 +1,18 @@
 'use strict';
 
-var childProcess = require('child_process');
 var meow = require('meow');
 var globby = require('globby');
-var inquirer = require('inquirer');
+var Promise = require('bluebird');
 var assign = require('lodash.assign');
-var npmRunPath = require('npm-run-path');
 var isGitClean = require('is-git-clean');
-var pinkiePromise = require('pinkie-promise');
+var inquirer = require('inquirer-bluebird');
 var updateNotifier = require('update-notifier');
+var Runner = require('jscodeshift/dist/Runner.js');
 var lib = require('./lib');
 
 function runTransforms(options, transforms, files) {
-	var spawnOptions = {
-		env: assign({}, process.env, {PATH: npmRunPath({cwd: options.dirname})}),
-		stdio: 'inherit'
-	};
-
-	var result;
-	transforms.forEach(function (transform) {
-		var args = ['-t', transform].concat(files);
-		result = childProcess.spawnSync('jscodeshift', args, spawnOptions);
-
-		if (result.error) {
-			throw result.error;
-		}
+	return Promise.map(transforms, function (transform) {
+		return Runner.run(transform, files, {silent: true});
 	});
 }
 
@@ -148,8 +136,6 @@ function printTip(options, answers, files) {
 }
 
 module.exports = function upgrader(options) {
-	global.Promise = pinkiePromise;
-
 	var releases = options.releases.slice().sort(lib.sortByVersion);
 
 	var cli = cliArgs(options, releases);
@@ -159,7 +145,8 @@ module.exports = function upgrader(options) {
 	var versions = lib.getVersions(releases);
 	var questions = getQuestions(options, cli, versions);
 
-	inquirer.prompt(questions, function (inquirerAnswers) {
+	return inquirer.prompt(questions)
+	.then(function (inquirerAnswers) {
 		var answers = assign({}, {from: cli.flags.from, to: cli.flags.to}, inquirerAnswers);
 		var files = answers.files || cli.input;
 		if (!files.length) {
@@ -169,8 +156,9 @@ module.exports = function upgrader(options) {
 		var transforms = lib.selectTransforms(releases, answers.from, answers.to)
 			.map(lib.resolvePath(options.dirname));
 
-		checkAndRunTransform(options, transforms, files);
-
-		printTip(options, answers, files);
+		return checkAndRunTransform(options, transforms, files)
+		.tap(function () {
+			printTip(options, answers, files);
+		});
 	});
 };
