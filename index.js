@@ -137,6 +137,16 @@ function checkAndRunTransform(options, transforms, files) {
 	return runTransforms(options, transforms, foundFiles);
 }
 
+function printTip(options, answers, files) {
+	console.log('\nFor similar projects, you may want to run the following command:');
+	console.log(
+		'    ' + options.pkg.name +
+		' --from ' + answers.from +
+		' --to ' + answers.to +
+		' ' + files.map(JSON.stringify).join(' ')
+	);
+}
+
 module.exports = function upgrader(options) {
 	global.Promise = pinkiePromise;
 
@@ -160,5 +170,7 @@ module.exports = function upgrader(options) {
 			.map(lib.resolvePath(options.dirname));
 
 		checkAndRunTransform(options, transforms, files);
+
+		printTip(options, answers, files);
 	});
 };
