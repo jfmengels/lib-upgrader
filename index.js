@@ -92,6 +92,9 @@ function getQuestions(options, cli, versions) {
 		message: 'What version of ' + name + ' are you moving to?',
 		choices: function (answers) {
 			return lib.takeVersionsAfter(versions, answers.currentVersion);
+		},
+		default: function (answers) {
+			return lib.takeVersionsAfter(versions, answers.currentVersion).length - 1;
 		}
 	}, {
 		type: 'input',
