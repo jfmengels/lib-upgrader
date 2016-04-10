@@ -2,11 +2,12 @@
 'use strict';
 
 var upgrader = require('lib-upgrader');
+var pkg = require('./package.json');
 var releases = require('./releases.json');
 
 upgrader({
 	libraryName: 'Your library name',
-	toolName: 'the name of your executable',
 	releases: releases,
+	pkg: pkg,
 	dirname: __dirname
 });

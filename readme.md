@@ -13,19 +13,20 @@ $ npm install --save lib-upgrader jscodeshift
 
 ## Usage
 
-Create a `cli.js` file at the root of your project that will serve as your "upgrader" executable, and add this sample code ([sample available here](sample/cli.js)):
+Create a `cli.js` file at the root of your project that will serve as your upgrader executable, and add this sample code ([sample available here](sample/cli.js)):
 
 ```js
 #!/usr/bin/env node
 'use strict';
 
 var upgrader = require('lib-upgrader');
+var pkg = require('./package.json');
 var releases = require('./releases.json');
 
 upgrader({
 	libraryName: 'Your library name',
-	toolName: 'the name of your executable',
 	releases: releases,
+	pkg: pkg,
 	dirname: __dirname
 });
 ```
@@ -36,31 +37,31 @@ and create a `releases.json` file next to `cli.js`, which looks like the followi
 [{
 	"version": "0.14.0",
 	"transforms": [
-		"path/to/transorm/a.js",
-		"path/to/transorm/b.js"
+		"path/to/transform/a.js",
+		"path/to/transform/b.js"
 	]
 }, {
 	"version": "0.15.0",
 	"transforms": [
-		"path/to/transorm/c.js",
-		"path/to/transorm/d.js"
+		"path/to/transform/c.js",
+		"path/to/transform/d.js"
 	]
 }, {
 	"version": "1.0.0",
 	"transforms": [
-		"path/to/transorm/e.js",
-		"path/to/transorm/f.js"
+		"path/to/transform/e.js",
+		"path/to/transform/f.js"
 	]
 }, {
 	"version": "2.0.0",
 	"transforms": [
-		"path/to/transorm/g.js",
-		"path/to/transorm/h.js"
+		"path/to/transform/g.js",
+		"path/to/transform/h.js"
 	]
 }]
 ```
 
-Give execution access to your script
+Give execution right to your script
 ```
 chmod +x script
 ```
@@ -69,7 +70,7 @@ and you should now be able to run the cli using
 ./cli.js
 ```
 
-Unless you committed your changes and your directory is clean, the program will exit and ask you to do that or stash your changes. You can force through it by adding `--force` to the command line.
+Unless you committed your changes and your directory is clean, when you run it, the program will exit and ask you to either commit or stash your changes. You can force through it by adding `--force` to the command line.
 
 ## License
 

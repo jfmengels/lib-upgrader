@@ -11,9 +11,9 @@ var pinkiePromise = require('pinkie-promise');
 var updateNotifier = require('update-notifier');
 var lib = require('./lib');
 
-function runTransforms(transforms, files) {
+function runTransforms(options, transforms, files) {
 	var spawnOptions = {
-		env: assign({}, process.env, {PATH: npmRunPath({cwd: __dirname})}),
+		env: assign({}, process.env, {PATH: npmRunPath({cwd: options.dirname})}),
 		stdio: 'inherit'
 	};
 
@@ -32,7 +32,7 @@ function cliArgs(options, releases) {
 	var upgrades = lib.listUpgrades(releases);
 	var description = [
 		'Usage',
-		'  $ ' + options.toolName + ' [<file|glob> ...]',
+		'  $ ' + options.pkg.name + ' [<file|glob> ...]',
 		'',
 		'Options',
 		'  --force, -f    Bypass safety checks and forcibly run codemods',
@@ -105,7 +105,7 @@ function getQuestions(options, cli, versions) {
 	}];
 }
 
-function checkAndRunTransform(transforms, files) {
+function checkAndRunTransform(options, transforms, files) {
 	if (transforms.length === 0) {
 		console.log('No transforms to apply');
 		return;
@@ -117,17 +117,17 @@ function checkAndRunTransform(transforms, files) {
 		return;
 	}
 
-	return runTransforms(transforms, foundFiles);
+	return runTransforms(options, transforms, foundFiles);
 }
 
-module.exports = function codemoder(options) {
+module.exports = function upgrader(options) {
 	global.Promise = pinkiePromise;
 
 	var releases = options.releases.slice().sort(lib.sortByVersion);
 
 	var cli = cliArgs(options, releases);
 	exitIfGitIsDirty(cli);
-	updateNotifier({pkg: cli.pkg}).notify();
+	updateNotifier({pkg: options.pkg}).notify();
 
 	var versions = lib.getVersions(releases);
 	var questions = getQuestions(options, cli, versions);
@@ -141,6 +141,6 @@ module.exports = function codemoder(options) {
 		var transforms = lib.selectTransforms(releases, answers.currentVersion, answers.nextVersion)
 			.map(lib.resolvePath(options.dirname));
 
-		checkAndRunTransform(transforms, files);
+		checkAndRunTransform(options, transforms, files);
 	});
 };
