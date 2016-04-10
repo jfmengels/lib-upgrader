@@ -5,6 +5,7 @@ var meow = require('meow');
 var globby = require('globby');
 var inquirer = require('inquirer');
 var assign = require('lodash.assign');
+var findIndex = require('lodash.findindex');
 var npmRunPath = require('npm-run-path');
 var isGitClean = require('is-git-clean');
 var pinkiePromise = require('pinkie-promise');
@@ -35,6 +36,7 @@ function cliArgs(options, releases) {
 		'  $ ' + options.pkg.name + ' [<file|glob> ...]',
 		'',
 		'Options',
+		'  --from         Specify the version of ' + options.libraryName + ' currently used',
 		'  --force, -f    Bypass safety checks and forcibly run codemods',
 		'',
 		'Available upgrades'
@@ -81,20 +83,26 @@ function getQuestions(options, cli, versions) {
 
 	var name = options.libraryName;
 
+	var from = findIndex(versions, function (version) {
+		return version === cli.flags.from || version.value === cli.flags.from;
+	});
+
 	return [{
 		type: 'list',
-		name: 'currentVersion',
+		name: 'from',
 		message: 'What version of ' + name + ' are you currently using?',
-		choices: versions.slice(0, -1)
+		choices: versions.slice(0, -1),
+		default: (from !== -1 && from) || undefined,
+		when: from === -1
 	}, {
 		type: 'list',
-		name: 'nextVersion',
+		name: 'to',
 		message: 'What version of ' + name + ' are you moving to?',
 		choices: function (answers) {
-			return lib.takeVersionsAfter(versions, answers.currentVersion);
+			return lib.takeVersionsAfter(versions, answers.from);
 		},
 		default: function (answers) {
-			return lib.takeVersionsAfter(versions, answers.currentVersion).length - 1;
+			return lib.takeVersionsAfter(versions, answers.from).length - 1;
 		}
 	}, {
 		type: 'input',
@@ -135,13 +143,14 @@ module.exports = function upgrader(options) {
 	var versions = lib.getVersions(releases);
 	var questions = getQuestions(options, cli, versions);
 
-	inquirer.prompt(questions, function (answers) {
+	inquirer.prompt(questions, function (inquirerAnswers) {
+		var answers = assign({}, {from: cli.flags.from, to: cli.flags.to}, inquirerAnswers);
 		var files = answers.files || cli.input;
 		if (!files.length) {
 			return;
 		}
 
-		var transforms = lib.selectTransforms(releases, answers.currentVersion, answers.nextVersion)
+		var transforms = lib.selectTransforms(releases, answers.from, answers.to)
 			.map(lib.resolvePath(options.dirname));
 
 		checkAndRunTransform(options, transforms, files);
