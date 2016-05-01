@@ -31,7 +31,7 @@
   "dependencies": {
     "bluebird": "^3.3.4",
     "globby": "^4.0.0",
-    "inquirer-bluebird": "^1.0.7",
+    "inquirer": "^1.0.2",
     "is-git-clean": "^1.0.0",
     "jscodeshift": "^0.3.19",
     "lodash.assign": "^4.0.7",
