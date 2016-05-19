@@ -11,7 +11,7 @@ var Runner = require('jscodeshift/dist/Runner.js');
 var lib = require('./lib');
 
 function runTransforms(options, transforms, files) {
-	return Promise.map(transforms, function (transform) {
+	return Promise.mapSeries(transforms, function (transform) {
 		return Runner.run(transform, files, {silent: true});
 	});
 }
