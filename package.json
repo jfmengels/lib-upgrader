@@ -29,21 +29,21 @@
     "npm"
   ],
   "dependencies": {
-    "bluebird": "^3.3.4",
-    "globby": "^4.0.0",
+    "bluebird": "^3.4.0",
+    "globby": "^4.1.0",
     "inquirer": "^1.0.2",
     "is-git-clean": "^1.0.0",
-    "jscodeshift": "^0.3.19",
-    "lodash.assign": "^4.0.7",
-    "lodash.findindex": "^4.3.0",
-    "lodash.flatten": "^4.1.1",
+    "jscodeshift": "^0.3.20",
+    "lodash.assign": "^4.0.9",
+    "lodash.findindex": "^4.4.0",
+    "lodash.flatten": "^4.2.0",
     "meow": "^3.7.0",
     "semver": "^5.1.0",
-    "update-notifier": "^0.6.3"
+    "update-notifier": "^0.7.0"
   },
   "devDependencies": {
     "ava": "^0.14.0",
-    "xo": "^0.13.0"
+    "xo": "^0.15.1"
   },
   "ava": {
     "files": [
