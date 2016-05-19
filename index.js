@@ -40,7 +40,7 @@ function cliArgs(options, releases) {
 	});
 }
 
-function exitIfGitIsDirty(cli) {
+function isGitDirtyAndDoINeedToExit(cli) {
 	var clean = false;
 	var errorMessage = 'Unable to determine if git directory is clean';
 	try {
@@ -59,9 +59,10 @@ function exitIfGitIsDirty(cli) {
 			console.log('ERROR: ' + errorMessage + '. Refusing to continue.');
 			console.log(ENSURE_BACKUP_MESSAGE);
 			console.log('You may use the --force flag to override this safety check.');
-			process.exit(1);
+			return new Error(errorMessage);
 		}
 	}
+	return false;
 }
 
 function versionsAfter(versions, versionIndex, answers) {
@@ -139,7 +140,11 @@ module.exports = function upgrader(options) {
 	var releases = options.releases.slice().sort(lib.sortByVersion);
 
 	var cli = cliArgs(options, releases);
-	exitIfGitIsDirty(cli);
+	var gitError = isGitDirtyAndDoINeedToExit(cli);
+	if (gitError) {
+		return Promise.reject(gitError);
+	}
+
 	updateNotifier({pkg: options.pkg}).notify();
 
 	var versions = lib.getVersions(releases);
