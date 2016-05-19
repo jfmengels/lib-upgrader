@@ -113,13 +113,13 @@ function getQuestions(options, cli, versions) {
 function checkAndRunTransform(options, transforms, files) {
 	if (transforms.length === 0) {
 		console.log('No transforms to apply');
-		return;
+		return Promise.resolve();
 	}
 
 	var foundFiles = globby.sync(files);
 	if (foundFiles.length === 0) {
 		console.log('No files to transform');
-		return;
+		return Promise.resolve();
 	}
 
 	return runTransforms(options, transforms, foundFiles);
