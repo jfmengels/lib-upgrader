@@ -176,7 +176,7 @@ function prompt(settings) {
 	});
 }
 
-function handleCLIArgs(settings) {
+function handleCliArgs(settings) {
 	var releases = settings.releases.slice().sort(lib.sortByVersion);
 	var args = cliArgs(settings, releases);
 	var newSettings = assign({}, settings, assign({input: args.input}, args.flags));
@@ -191,7 +191,7 @@ function checkForUpdates(settings) {
 module.exports = {
 	checkGitIsClean: checkGitIsClean,
 	checkForUpdates: checkForUpdates,
-	handleCLIArgs: handleCLIArgs,
+	handleCliArgs: handleCliArgs,
 	prompt: prompt,
 	rest: upgrader
 };
