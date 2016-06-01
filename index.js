@@ -116,8 +116,6 @@ function printTip(options, files) {
 function upgrader(options) {
 	var releases = options.releases.slice().sort(lib.sortByVersion);
 
-	updateNotifier({pkg: options.pkg}).notify();
-
 	if (!options.files || options.files.length === 0) {
 		return Promise.resolve(options);
 	}
@@ -185,9 +183,15 @@ function handleCLIArgs(settings) {
 	return Promise.resolve(newSettings);
 }
 
+function checkForUpdates(settings) {
+	updateNotifier({pkg: settings.pkg}).notify();
+	return Promise.resolve(settings);
+}
+
 module.exports = {
+	checkGitIsClean: checkGitIsClean,
+	checkForUpdates: checkForUpdates,
 	handleCLIArgs: handleCLIArgs,
 	prompt: prompt,
-	checkGitIsClean: checkGitIsClean,
 	rest: upgrader
 };
