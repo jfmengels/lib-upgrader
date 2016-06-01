@@ -42,31 +42,6 @@ function cliArgs(options, releases) {
 	});
 }
 
-function isGitDirtyAndDoINeedToExit(cli) {
-	var clean = false;
-	var errorMessage = 'Unable to determine if git directory is clean';
-	try {
-		clean = isGitClean.sync();
-		errorMessage = 'Git directory is not clean';
-	} catch (e) {
-	}
-
-	var ENSURE_BACKUP_MESSAGE = 'Ensure you have a backup of your tests or commit the latest changes before continuing.';
-
-	if (!clean) {
-		if (cli.flags.force) {
-			console.log('WARNING: ' + errorMessage + '. Forcibly continuing.');
-			console.log(ENSURE_BACKUP_MESSAGE);
-		} else {
-			console.log('ERROR: ' + errorMessage + '. Refusing to continue.');
-			console.log(ENSURE_BACKUP_MESSAGE);
-			console.log('You may use the --force flag to override this safety check.');
-			return new Error(errorMessage);
-		}
-	}
-	return false;
-}
-
 function versionsAfter(versions, versionIndex, answers) {
 	var version = answers.from;
 	if (versionIndex !== -1) {
@@ -141,11 +116,6 @@ function printTip(options, files) {
 function upgrader(options) {
 	var releases = options.releases.slice().sort(lib.sortByVersion);
 
-	var gitError = isGitDirtyAndDoINeedToExit(options);
-	if (gitError) {
-		return Promise.reject(gitError);
-	}
-
 	updateNotifier({pkg: options.pkg}).notify();
 
 	if (!options.files || options.files.length === 0) {
@@ -160,6 +130,31 @@ function upgrader(options) {
 		printTip(options, options.files);
 	})
 	.return(options);
+}
+
+function checkGitIsClean(settings) {
+	var clean = false;
+	var errorMessage = 'Unable to determine if git directory is clean';
+	try {
+		clean = isGitClean.sync();
+		errorMessage = 'Git directory is not clean';
+	} catch (e) {
+	}
+
+	var ENSURE_BACKUP_MESSAGE = 'Ensure you have a backup of your tests or commit the latest changes before continuing.';
+
+	if (!clean) {
+		if (settings.force) {
+			console.log('WARNING: ' + errorMessage + '. Forcibly continuing.');
+			console.log(ENSURE_BACKUP_MESSAGE);
+		} else {
+			console.log('ERROR: ' + errorMessage + '. Refusing to continue.');
+			console.log(ENSURE_BACKUP_MESSAGE);
+			console.log('You may use the --force flag to override this safety check.');
+			return Promise.reject(new Error(errorMessage));
+		}
+	}
+	return Promise.resolve(settings);
 }
 
 function prompt(settings) {
@@ -183,7 +178,16 @@ function prompt(settings) {
 	});
 }
 
+function handleCLIArgs(settings) {
+	var releases = settings.releases.slice().sort(lib.sortByVersion);
+	var args = cliArgs(settings, releases);
+	var newSettings = assign({}, settings, assign({input: args.input}, args.flags));
+	return Promise.resolve(newSettings);
+}
+
 module.exports = {
+	handleCLIArgs: handleCLIArgs,
 	prompt: prompt,
+	checkGitIsClean: checkGitIsClean,
 	rest: upgrader
 };
