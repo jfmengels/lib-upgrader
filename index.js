@@ -103,31 +103,30 @@ function checkAndRunTransform(options, transforms, files) {
 	return runTransforms(options, transforms, foundFiles);
 }
 
-function printTip(options, files) {
+function printTip(options) {
 	console.log('\nFor similar projects, you may want to run the following command:');
 	console.log(
 		'    ' + options.pkg.name +
 		' --from ' + options.from +
 		' --to ' + options.to +
-		' ' + files.map(JSON.stringify).join(' ')
+		' ' + options.files.map(JSON.stringify).join(' ')
 	);
+	return Promise.resolve(options);
 }
 
-function upgrader(options) {
-	var releases = options.releases.slice().sort(lib.sortByVersion);
-
+function applyCodemods(options) {
 	if (!options.files || options.files.length === 0) {
 		return Promise.resolve(options);
 	}
 
+	var releases = options.releases.slice().sort(lib.sortByVersion);
 	var transforms = lib.selectTransforms(releases, options.from, options.to)
 		.map(lib.resolvePath(options.dirname));
 
 	return checkAndRunTransform(options, transforms, options.files)
 	.tap(function () {
-		printTip(options, options.files);
-	})
-	.return(options);
+		return printTip(options);
+	});
 }
 
 function checkGitIsClean(settings) {
@@ -189,9 +188,9 @@ function checkForUpdates(settings) {
 }
 
 module.exports = {
-	checkGitIsClean: checkGitIsClean,
+	applyCodemods: applyCodemods,
 	checkForUpdates: checkForUpdates,
+	checkGitIsClean: checkGitIsClean,
 	handleCliArgs: handleCliArgs,
-	prompt: prompt,
-	rest: upgrader
+	prompt: prompt
 };
