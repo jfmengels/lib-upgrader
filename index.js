@@ -128,20 +128,19 @@ function checkAndRunTransform(options, transforms, files) {
 	return runTransforms(options, transforms, foundFiles);
 }
 
-function printTip(options, answers, files) {
+function printTip(options, files) {
 	console.log('\nFor similar projects, you may want to run the following command:');
 	console.log(
 		'    ' + options.pkg.name +
-		' --from ' + answers.from +
-		' --to ' + answers.to +
+		' --from ' + options.from +
+		' --to ' + options.to +
 		' ' + files.map(JSON.stringify).join(' ')
 	);
 }
 
-module.exports = function upgrader(passedOptions) {
-	var releases = passedOptions.releases.slice().sort(lib.sortByVersion);
+function upgrader(options) {
+	var releases = options.releases.slice().sort(lib.sortByVersion);
 
-	var options = assign({}, passedOptions, cliArgs(passedOptions, releases));
 	var gitError = isGitDirtyAndDoINeedToExit(options);
 	if (gitError) {
 		return Promise.reject(gitError);
@@ -149,23 +148,42 @@ module.exports = function upgrader(passedOptions) {
 
 	updateNotifier({pkg: options.pkg}).notify();
 
+	if (!options.files || options.files.length === 0) {
+		return Promise.resolve(options);
+	}
+
+	var transforms = lib.selectTransforms(releases, options.from, options.to)
+		.map(lib.resolvePath(options.dirname));
+
+	return checkAndRunTransform(options, transforms, options.files)
+	.tap(function () {
+		printTip(options, options.files);
+	})
+	.return(options);
+}
+
+function prompt(settings) {
+	var releases = settings.releases.slice().sort(lib.sortByVersion);
+
+	var options = assign({}, settings, cliArgs(settings, releases));
 	var versions = lib.getVersions(releases);
 	var questions = getQuestions(options, versions);
 
 	return inquirer.prompt(questions)
-	.then(function (inquirerAnswers) {
-		var answers = assign({}, {from: options.flags.from, to: options.flags.to}, inquirerAnswers);
-		var files = answers.files || options.input;
-		if (!files.length) {
-			return;
-		}
-
-		var transforms = lib.selectTransforms(releases, answers.from, answers.to)
-			.map(lib.resolvePath(options.dirname));
-
-		return checkAndRunTransform(options, transforms, files)
-		.tap(function () {
-			printTip(options, answers, files);
-		});
+	.then(function (answers) {
+		return assign({},
+			options,
+			{
+				from: options.flags.from,
+				to: options.flags.to,
+				files: answers.files || options.input
+			},
+			answers
+		);
 	});
+}
+
+module.exports = {
+	prompt: prompt,
+	rest: upgrader
 };
