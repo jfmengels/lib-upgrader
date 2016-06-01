@@ -12,7 +12,7 @@ var lib = require('./lib');
 
 function runTransforms(options, transforms, files) {
 	return Promise.mapSeries(transforms, function (transform) {
-		return Runner.run(transform, files, {silent: true});
+		return Runner.run(transform, files, {silent: options.flags.silent});
 	});
 }
 
@@ -26,15 +26,17 @@ function cliArgs(options, releases) {
 		'  --from <version> Specify the version of ' + options.libraryName + ' currently used',
 		'  --to <version>   Specify the version of ' + options.libraryName + ' to move to',
 		'  --force, -f      Bypass safety checks and forcibly run codemods',
+		'  --silent, -S     Disable log output',
 		'',
 		'Available upgrades'
 	].concat(upgrades);
 
 	return meow(description, {
-		boolean: ['force'],
+		boolean: ['force', 'silent'],
 		string: ['_'],
 		alias: {
 			f: 'force',
+			S: 'silent',
 			h: 'help'
 		}
 	});
@@ -73,13 +75,13 @@ function versionsAfter(versions, versionIndex, answers) {
 	return lib.takeVersionsAfter(versions, version);
 }
 
-function getQuestions(options, cli, versions) {
+function getQuestions(options, versions) {
 	function truthy(v) {
 		return v;
 	}
 	var name = options.libraryName;
-	var from = lib.indexOfVersion(versions, cli.flags.from);
-	var to = lib.indexOfVersion(versions, cli.flags.to);
+	var from = lib.indexOfVersion(versions, options.flags.from);
+	var to = lib.indexOfVersion(versions, options.flags.to);
 
 	return [{
 		type: 'list',
@@ -104,7 +106,7 @@ function getQuestions(options, cli, versions) {
 		name: 'files',
 		message: 'On which files should the codemods be applied?',
 		default: options.files,
-		when: !cli.input.length,
+		when: !options.input.length,
 		filter: function (files) {
 			return files.trim().split(/\s+/).filter(truthy);
 		}
@@ -136,11 +138,11 @@ function printTip(options, answers, files) {
 	);
 }
 
-module.exports = function upgrader(options) {
-	var releases = options.releases.slice().sort(lib.sortByVersion);
+module.exports = function upgrader(passedOptions) {
+	var releases = passedOptions.releases.slice().sort(lib.sortByVersion);
 
-	var cli = cliArgs(options, releases);
-	var gitError = isGitDirtyAndDoINeedToExit(cli);
+	var options = assign({}, passedOptions, cliArgs(passedOptions, releases));
+	var gitError = isGitDirtyAndDoINeedToExit(options);
 	if (gitError) {
 		return Promise.reject(gitError);
 	}
@@ -148,12 +150,12 @@ module.exports = function upgrader(options) {
 	updateNotifier({pkg: options.pkg}).notify();
 
 	var versions = lib.getVersions(releases);
-	var questions = getQuestions(options, cli, versions);
+	var questions = getQuestions(options, versions);
 
 	return inquirer.prompt(questions)
 	.then(function (inquirerAnswers) {
-		var answers = assign({}, {from: cli.flags.from, to: cli.flags.to}, inquirerAnswers);
-		var files = answers.files || cli.input;
+		var answers = assign({}, {from: options.flags.from, to: options.flags.to}, inquirerAnswers);
+		var files = answers.files || options.input;
 		if (!files.length) {
 			return;
 		}
