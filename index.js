@@ -160,10 +160,7 @@ function prompt(settings) {
 
 	return inquirer.prompt(questions)
 	.then(function (answers) {
-		return assign({},
-			settings,
-			answers
-		);
+		return assign({}, settings, answers);
 	});
 }
 
