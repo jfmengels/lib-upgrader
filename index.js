@@ -10,21 +10,21 @@ var updateNotifier = require('update-notifier');
 var Runner = require('jscodeshift/dist/Runner.js');
 var lib = require('./lib');
 
-function runTransforms(options, transforms, files) {
+function runTransforms(settings, transforms, files) {
 	return Promise.mapSeries(transforms, function (transform) {
-		return Runner.run(transform, files, {silent: options.silent});
+		return Runner.run(transform, files, {silent: settings.silent});
 	});
 }
 
-function cliArgs(options, releases) {
+function cliArgs(settings, releases) {
 	var upgrades = lib.listUpgrades(releases);
 	var description = [
 		'Usage',
-		'  $ ' + options.pkg.name + ' [<file|glob> ...]',
+		'  $ ' + settings.pkg.name + ' [<file|glob> ...]',
 		'',
 		'Options',
-		'  --from <version> Specify the version of ' + options.libraryName + ' currently used',
-		'  --to <version>   Specify the version of ' + options.libraryName + ' to move to',
+		'  --from <version> Specify the version of ' + settings.libraryName + ' currently used',
+		'  --to <version>   Specify the version of ' + settings.libraryName + ' to move to',
 		'  --force, -f      Bypass safety checks and forcibly run codemods',
 		'  --silent, -S     Disable log output',
 		'',
@@ -50,13 +50,13 @@ function versionsAfter(versions, versionIndex, answers) {
 	return lib.takeVersionsAfter(versions, version);
 }
 
-function getQuestions(options, versions) {
+function getQuestions(settings, versions) {
 	function truthy(v) {
 		return v;
 	}
-	var name = options.libraryName;
-	var from = lib.indexOfVersion(versions, options.from);
-	var to = lib.indexOfVersion(versions, options.to);
+	var name = settings.libraryName;
+	var from = lib.indexOfVersion(versions, settings.from);
+	var to = lib.indexOfVersion(versions, settings.to);
 
 	return [{
 		type: 'list',
@@ -80,15 +80,15 @@ function getQuestions(options, versions) {
 		type: 'input',
 		name: 'files',
 		message: 'On which files should the codemods be applied?',
-		default: options.files,
-		when: !options.files || options.files.length === 0,
+		default: settings.files,
+		when: !settings.files || settings.files.length === 0,
 		filter: function (files) {
 			return files.trim().split(/\s+/).filter(truthy);
 		}
 	}];
 }
 
-function checkAndRunTransform(options, transforms, files) {
+function checkAndRunTransform(settings, transforms, files) {
 	if (transforms.length === 0) {
 		console.log('No transforms to apply');
 		return Promise.resolve();
@@ -100,31 +100,31 @@ function checkAndRunTransform(options, transforms, files) {
 		return Promise.resolve();
 	}
 
-	return runTransforms(options, transforms, foundFiles);
+	return runTransforms(settings, transforms, foundFiles);
 }
 
-function printTip(options) {
+function printTip(settings) {
 	console.log('\nFor similar projects, you may want to run the following command:');
 	console.log(
-		'    ' + options.pkg.name +
-		' --from ' + options.from +
-		' --to ' + options.to +
-		' ' + options.files.map(JSON.stringify).join(' ')
+		'    ' + settings.pkg.name +
+		' --from ' + settings.from +
+		' --to ' + settings.to +
+		' ' + settings.files.map(JSON.stringify).join(' ')
 	);
-	return Promise.resolve(options);
+	return Promise.resolve(settings);
 }
 
-function applyCodemods(options) {
-	if (!options.files || options.files.length === 0) {
-		return Promise.resolve(options);
+function applyCodemods(settings) {
+	if (!settings.files || settings.files.length === 0) {
+		return Promise.resolve(settings);
 	}
 
-	var releases = options.releases.slice().sort(lib.sortByVersion);
-	var transforms = lib.selectTransforms(releases, options.from, options.to)
-		.map(lib.resolvePath(options.dirname));
+	var releases = settings.releases.slice().sort(lib.sortByVersion);
+	var transforms = lib.selectTransforms(releases, settings.from, settings.to)
+		.map(lib.resolvePath(settings.dirname));
 
-	return checkAndRunTransform(options, transforms, options.files)
-		.return(options);
+	return checkAndRunTransform(settings, transforms, settings.files)
+		.return(settings);
 }
 
 function checkGitIsClean(settings) {
