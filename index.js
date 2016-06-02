@@ -12,7 +12,7 @@ var lib = require('./lib');
 
 function runTransforms(options, transforms, files) {
 	return Promise.mapSeries(transforms, function (transform) {
-		return Runner.run(transform, files, {silent: options.flags.silent});
+		return Runner.run(transform, files, {silent: options.silent});
 	});
 }
 
@@ -55,8 +55,8 @@ function getQuestions(options, versions) {
 		return v;
 	}
 	var name = options.libraryName;
-	var from = lib.indexOfVersion(versions, options.flags.from);
-	var to = lib.indexOfVersion(versions, options.flags.to);
+	var from = lib.indexOfVersion(versions, options.from);
+	var to = lib.indexOfVersion(versions, options.to);
 
 	return [{
 		type: 'list',
@@ -81,7 +81,7 @@ function getQuestions(options, versions) {
 		name: 'files',
 		message: 'On which files should the codemods be applied?',
 		default: options.files,
-		when: !options.input.length,
+		when: !options.files || options.files.length === 0,
 		filter: function (files) {
 			return files.trim().split(/\s+/).filter(truthy);
 		}
@@ -157,19 +157,13 @@ function checkGitIsClean(settings) {
 function prompt(settings) {
 	var releases = settings.releases.slice().sort(lib.sortByVersion);
 
-	var options = assign({}, settings, cliArgs(settings, releases));
 	var versions = lib.getVersions(releases);
-	var questions = getQuestions(options, versions);
+	var questions = getQuestions(settings, versions);
 
 	return inquirer.prompt(questions)
 	.then(function (answers) {
 		return assign({},
-			options,
-			{
-				from: options.flags.from,
-				to: options.flags.to,
-				files: answers.files || options.input
-			},
+			settings,
 			answers
 		);
 	});
@@ -178,7 +172,7 @@ function prompt(settings) {
 function handleCliArgs(settings) {
 	var releases = settings.releases.slice().sort(lib.sortByVersion);
 	var args = cliArgs(settings, releases);
-	var newSettings = assign({}, settings, assign({input: args.input}, args.flags));
+	var newSettings = assign({files: args.input}, settings, args.flags);
 	return Promise.resolve(newSettings);
 }
 
