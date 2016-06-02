@@ -124,9 +124,7 @@ function applyCodemods(options) {
 		.map(lib.resolvePath(options.dirname));
 
 	return checkAndRunTransform(options, transforms, options.files)
-	.tap(function () {
-		return printTip(options);
-	});
+		.return(options);
 }
 
 function checkGitIsClean(settings) {
@@ -186,5 +184,6 @@ module.exports = {
 	checkForUpdates: checkForUpdates,
 	checkGitIsClean: checkGitIsClean,
 	handleCliArgs: handleCliArgs,
+	printTip: printTip,
 	prompt: prompt
 };
