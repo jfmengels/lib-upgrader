@@ -18,7 +18,7 @@ function runTransforms(settings, transforms, files) {
 
 function cliArgs(settings, releases) {
 	var upgrades = lib.listUpgrades(releases);
-	var description = [
+	var help = [
 		'Usage',
 		'  $ ' + settings.pkg.name + ' [<file|glob> ...]',
 		'',
@@ -31,7 +31,12 @@ function cliArgs(settings, releases) {
 		'Available upgrades'
 	].concat(upgrades);
 
-	return meow(description, {
+	var pkg = settings.pkg || {};
+	return meow({
+		description: pkg.description,
+		version: pkg.version,
+		help: help
+	}, {
 		boolean: ['force', 'silent'],
 		string: ['_'],
 		alias: {
