@@ -6,7 +6,7 @@ var pkg = require('./package.json');
 var releases = require('./releases.json');
 
 var settings = {
-	libraryName: 'Lodash',
+	libraryName: 'Your library name',
 	releases: releases,
 	pkg: pkg,
 	dirname: __dirname

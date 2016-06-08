@@ -23,12 +23,24 @@ var upgrader = require('lib-upgrader');
 var pkg = require('./package.json');
 var releases = require('./releases.json');
 
-upgrader({
+var settings = {
 	libraryName: 'Your library name',
 	releases: releases,
 	pkg: pkg,
 	dirname: __dirname
-});
+};
+
+upgrader.handleCliArgs(settings)
+	.then(upgrader.checkForUpdates)
+	.then(upgrader.checkGitIsClean)
+	.then(upgrader.prompt)
+	.then(upgrader.applyCodemods)
+	.then(upgrader.printTip)
+	.catch(function (err) {
+		console.error(err.message);
+		process.exit(1);
+	});
+
 ```
 
 and create a `releases.json` file next to `cli.js`, which looks like the following ([sample available here](sample/releases.json)):
