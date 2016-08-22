@@ -12,7 +12,7 @@ var lib = require('./lib');
 
 function runTransforms(settings, transforms, files) {
 	return Promise.mapSeries(transforms, function (transform) {
-		return Runner.run(transform, files, {silent: settings.silent});
+		return Runner.run(transform, files, {silent: settings.silent, verbose: settings.verbose});
 	});
 }
 
@@ -27,6 +27,7 @@ function cliArgs(settings, releases) {
 		'  --to <version>   Specify the version of ' + settings.libraryName + ' to move to',
 		'  --force, -f      Bypass safety checks and forcibly run codemods',
 		'  --silent, -S     Disable log output',
+		'  --verbose, -v    Verbose logging',
 		'',
 		'Available upgrades'
 	].concat(upgrades);
@@ -42,6 +43,7 @@ function cliArgs(settings, releases) {
 		alias: {
 			f: 'force',
 			S: 'silent',
+			v: 'verbose',
 			h: 'help'
 		}
 	});
