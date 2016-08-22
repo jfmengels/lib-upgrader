@@ -12,7 +12,7 @@ var lib = require('./lib');
 
 function runTransforms(settings, transforms, files) {
 	return Promise.mapSeries(transforms, function (transform) {
-		return Runner.run(transform, files, {silent: settings.silent, verbose:settings.verbose});
+		return Runner.run(transform, files, {silent: settings.silent, verbose: settings.verbose});
 	});
 }
 
